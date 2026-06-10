@@ -1,0 +1,350 @@
+// Sumanglam digital showroom — Prisma schema.
+// Mirrors project-vault/10_Database notes. Schema changes require vault updates first.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Enums (project-vault/10_Database/Database - Status Enums.md)
+// ---------------------------------------------------------------------------
+
+enum BrandType {
+  SOLUTION @map("solution")
+  PRODUCT  @map("product")
+}
+
+enum AvailabilityStatus {
+  AVAILABLE    @map("available")
+  LIMITED      @map("limited")
+  DISCONTINUED @map("discontinued")
+  COMING_SOON  @map("coming_soon")
+}
+
+enum LeadStatus {
+  NEW       @map("new")
+  CONTACTED @map("contacted")
+  QUALIFIED @map("qualified")
+  CONVERTED @map("converted")
+  CLOSED    @map("closed")
+}
+
+// Content governance requires draft/published/archived on content items.
+enum ContentStatus {
+  DRAFT     @map("draft")
+  PUBLISHED @map("published")
+  ARCHIVED  @map("archived")
+}
+
+// Consultation status values were unspecified; conservative V1 set,
+// documented in Implementation Decisions.
+enum ConsultationStatus {
+  NEW       @map("new")
+  SCHEDULED @map("scheduled")
+  COMPLETED @map("completed")
+  CANCELLED @map("cancelled")
+}
+
+// Project type enum was unspecified; derived from documented spaces/solutions.
+enum ProjectType {
+  KITCHEN             @map("kitchen")
+  WARDROBE            @map("wardrobe")
+  COMPLETE_HOME       @map("complete_home")
+  HARDWARE_APPLIANCES @map("hardware_appliances")
+  OTHER               @map("other")
+}
+
+enum ContactMethod {
+  PHONE    @map("phone")
+  WHATSAPP @map("whatsapp")
+  EMAIL    @map("email")
+}
+
+// ---------------------------------------------------------------------------
+// Core content tables
+// ---------------------------------------------------------------------------
+
+model Space {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  description String?
+  heroImage   String?  @map("hero_image")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  collections  Collection[]
+  inspirations Inspiration[]
+
+  @@map("spaces")
+}
+
+model Collection {
+  id               String        @id @default(cuid())
+  title            String
+  slug             String        @unique
+  shortDescription String?       @map("short_description")
+  longDescription  String?       @map("long_description")
+  coverImage       String?       @map("cover_image")
+  status           ContentStatus @default(PUBLISHED)
+  spaceId          String?       @map("space_id")
+  createdAt        DateTime      @default(now()) @map("created_at")
+  updatedAt        DateTime      @updatedAt @map("updated_at")
+
+  space        Space?                  @relation(fields: [spaceId], references: [id], onDelete: SetNull)
+  inspirations CollectionInspiration[]
+
+  @@index([spaceId])
+  @@map("collections")
+}
+
+model Inspiration {
+  id               String        @id @default(cuid())
+  title            String
+  slug             String        @unique
+  shortDescription String?       @map("short_description")
+  longDescription  String?       @map("long_description")
+  primaryImage     String?       @map("primary_image")
+  galleryImages    String[]      @map("gallery_images")
+  videoUrl         String?       @map("video_url")
+  spaceId          String        @map("space_id")
+  isFeatured       Boolean       @default(false) @map("is_featured")
+  status           ContentStatus @default(PUBLISHED)
+  createdAt        DateTime      @default(now()) @map("created_at")
+  updatedAt        DateTime      @updatedAt @map("updated_at")
+
+  space            Space                        @relation(fields: [spaceId], references: [id], onDelete: Restrict)
+  collections      CollectionInspiration[]
+  products         InspirationProduct[]
+  brands           InspirationBrand[]
+  showroomSections ShowroomInspirationMapping[]
+
+  @@index([isFeatured])
+  @@index([spaceId])
+  @@map("inspirations")
+}
+
+model Brand {
+  id            String        @id @default(cuid())
+  name          String
+  slug          String        @unique
+  brandType     BrandType     @map("brand_type")
+  parentBrandId String?       @map("parent_brand_id")
+  description   String?
+  story         String?
+  logo          String?
+  heroImage     String?       @map("hero_image")
+  isFeatured    Boolean       @default(false) @map("is_featured")
+  status        ContentStatus @default(PUBLISHED)
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  parentBrand      Brand?                 @relation("BrandHierarchy", fields: [parentBrandId], references: [id], onDelete: SetNull)
+  childBrands      Brand[]                @relation("BrandHierarchy")
+  products         Product[]
+  inspirations     InspirationBrand[]
+  showroomSections ShowroomBrandMapping[]
+
+  @@index([isFeatured])
+  @@map("brands")
+}
+
+model ProductType {
+  id   String @id @default(cuid())
+  name String
+  slug String @unique
+
+  categories ProductCategory[]
+  products   Product[]
+
+  @@map("product_types")
+}
+
+model ProductCategory {
+  id            String @id @default(cuid())
+  name          String
+  slug          String
+  productTypeId String @map("product_type_id")
+
+  productType   ProductType              @relation(fields: [productTypeId], references: [id], onDelete: Restrict)
+  subcategories ProductSubcategory[]
+  products      ProductCategoryMapping[]
+
+  @@unique([productTypeId, slug])
+  @@map("product_categories")
+}
+
+model ProductSubcategory {
+  id         String @id @default(cuid())
+  name       String
+  slug       String
+  categoryId String @map("category_id")
+
+  category ProductCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  products Product[]
+
+  @@unique([categoryId, slug])
+  @@map("product_subcategories")
+}
+
+model Product {
+  id                 String             @id @default(cuid())
+  name               String
+  slug               String             @unique
+  sku                String?
+  brandId            String             @map("brand_id")
+  productTypeId      String             @map("product_type_id")
+  subcategoryId      String?            @map("subcategory_id")
+  shortDescription   String?            @map("short_description")
+  longDescription    String?            @map("long_description")
+  priceRange         String?            @map("price_range")
+  primaryImage       String?            @map("primary_image")
+  galleryImages      String[]           @map("gallery_images")
+  availabilityStatus AvailabilityStatus @default(AVAILABLE) @map("availability_status")
+  technicalSpecs     Json?              @map("technical_specs_json")
+  isFeatured         Boolean            @default(false) @map("is_featured")
+  status             ContentStatus      @default(PUBLISHED)
+  createdAt          DateTime           @default(now()) @map("created_at")
+  updatedAt          DateTime           @updatedAt @map("updated_at")
+
+  brand        Brand                    @relation(fields: [brandId], references: [id], onDelete: Restrict)
+  productType  ProductType              @relation(fields: [productTypeId], references: [id], onDelete: Restrict)
+  subcategory  ProductSubcategory?      @relation(fields: [subcategoryId], references: [id], onDelete: SetNull)
+  categories   ProductCategoryMapping[]
+  inspirations InspirationProduct[]
+
+  @@index([brandId])
+  @@index([productTypeId])
+  @@index([isFeatured])
+  @@map("products")
+}
+
+model ShowroomSection {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  floorNumber Int?     @map("floor_number")
+  images      String[]
+  videoUrl    String?  @map("video_url")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  brands       ShowroomBrandMapping[]
+  inspirations ShowroomInspirationMapping[]
+
+  @@map("showroom_sections")
+}
+
+// ---------------------------------------------------------------------------
+// Leads and consultations
+// ---------------------------------------------------------------------------
+
+model Lead {
+  id           String     @id @default(cuid())
+  name         String
+  phone        String
+  email        String?
+  leadStatus   LeadStatus @default(NEW) @map("lead_status")
+  leadSource   String?    @map("lead_source")
+  sourcePage   String?    @map("source_page")
+  referringUrl String?    @map("referring_url")
+  notes        String?
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+
+  consultations Consultation[]
+
+  @@index([phone])
+  @@map("leads")
+}
+
+model Consultation {
+  id                     String             @id @default(cuid())
+  leadId                 String             @map("lead_id")
+  projectType            ProjectType        @map("project_type")
+  requirements           String
+  preferredContactMethod ContactMethod?     @map("preferred_contact_method")
+  status                 ConsultationStatus @default(NEW)
+  createdAt              DateTime           @default(now()) @map("created_at")
+  updatedAt              DateTime           @updatedAt @map("updated_at")
+
+  lead Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+  @@map("consultations")
+}
+
+// ---------------------------------------------------------------------------
+// Junction tables (project-vault/10_Database/Database - junction tables.md)
+// ---------------------------------------------------------------------------
+
+model CollectionInspiration {
+  collectionId  String @map("collection_id")
+  inspirationId String @map("inspiration_id")
+
+  collection  Collection  @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  inspiration Inspiration @relation(fields: [inspirationId], references: [id], onDelete: Cascade)
+
+  @@id([collectionId, inspirationId])
+  @@map("collection_inspirations")
+}
+
+model InspirationProduct {
+  inspirationId String @map("inspiration_id")
+  productId     String @map("product_id")
+
+  inspiration Inspiration @relation(fields: [inspirationId], references: [id], onDelete: Cascade)
+  product     Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@id([inspirationId, productId])
+  @@map("inspiration_products")
+}
+
+model InspirationBrand {
+  inspirationId String @map("inspiration_id")
+  brandId       String @map("brand_id")
+
+  inspiration Inspiration @relation(fields: [inspirationId], references: [id], onDelete: Cascade)
+  brand       Brand       @relation(fields: [brandId], references: [id], onDelete: Cascade)
+
+  @@id([inspirationId, brandId])
+  @@map("inspiration_brands")
+}
+
+model ProductCategoryMapping {
+  productId  String @map("product_id")
+  categoryId String @map("category_id")
+
+  product  Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  category ProductCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([productId, categoryId])
+  @@map("product_category_mappings")
+}
+
+model ShowroomBrandMapping {
+  showroomSectionId String @map("showroom_section_id")
+  brandId           String @map("brand_id")
+
+  showroomSection ShowroomSection @relation(fields: [showroomSectionId], references: [id], onDelete: Cascade)
+  brand           Brand           @relation(fields: [brandId], references: [id], onDelete: Cascade)
+
+  @@id([showroomSectionId, brandId])
+  @@map("showroom_brand_mappings")
+}
+
+model ShowroomInspirationMapping {
+  showroomSectionId String @map("showroom_section_id")
+  inspirationId     String @map("inspiration_id")
+
+  showroomSection ShowroomSection @relation(fields: [showroomSectionId], references: [id], onDelete: Cascade)
+  inspiration     Inspiration     @relation(fields: [inspirationId], references: [id], onDelete: Cascade)
+
+  @@id([showroomSectionId, inspirationId])
+  @@map("showroom_inspiration_mappings")
+}

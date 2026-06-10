@@ -1,0 +1,148 @@
+# Implementation Decisions
+
+## Purpose
+
+Tracks non-blocking implementation choices made while building V1 so future agents do not rediscover or reverse them casually.
+
+## Decisions
+
+### Package Manager
+
+Use npm. The project now has `package-lock.json`.
+
+### Visual Tokens
+
+Use a restrained premium interior-showroom palette:
+
+* Warm ivory background.
+* White content surfaces.
+* Deep warm charcoal ink.
+* Muted bronze accent.
+* Soft clay/sand neutrals.
+
+Reason: Source docs specified luxury, warmth, trust, Apple minimalism, editorial design, and no exact color tokens.
+
+### Typography
+
+Use Fraunces for display typography and Inter for body/UI text through `next/font/google`.
+
+Reason: Source docs specified elegant, modern, confident, readable typography but no exact font family.
+
+### Animation Stack
+
+Install and configure Three.js, GSAP with ScrollTrigger, and Lenis.js as approved dependencies. Use them only for subtle, performance-conscious motion. Respect reduced-motion preferences.
+
+Reason: User explicitly approved this stack after the original architecture docs.
+
+### Database Provider
+
+A Supabase PostgreSQL project was used during implementation based on the previous executor progress. The docs still allow Supabase or Neon. Treat production provider as a launch decision until credentials, billing, and ownership are confirmed.
+
+### Content Status
+
+Add `ContentStatus` enum with `DRAFT`, `PUBLISHED`, and `ARCHIVED` to content tables.
+
+Reason: Content model requires draft/published/archived, while the original database table list omitted those fields.
+
+### Consultation Status
+
+Add conservative V1 consultation statuses: `NEW`, `SCHEDULED`, `COMPLETED`, `CANCELLED`.
+
+Reason: The docs required a consultation status field but did not define allowed values.
+
+### Project Type
+
+Use `KITCHEN`, `WARDROBE`, `COMPLETE_HOME`, `HARDWARE_APPLIANCES`, and `OTHER`.
+
+Reason: Project type enum was not specified; these values match documented spaces and consultation intent.
+
+### Duplicate Lead Handling
+
+If a consultation is submitted with an existing phone number, update the most recent matching lead instead of creating a duplicate, then create a new consultation.
+
+Reason: Duplicate lead behavior was open; this preserves pipeline history without fragmenting one contact.
+
+### Admin Auth
+
+Use Auth.js credentials provider with one configured admin account from `ADMIN_EMAIL` and `ADMIN_PASSWORD`.
+
+Reason: V1 requires admin-only authentication and excludes public user accounts. This is a placeholder until real production auth ownership is decided.
+
+### Admin Notification
+
+Consultation creation logs an admin notification placeholder. Real notification delivery is not implemented yet.
+
+Reason: Notification channel was an open question. Lead and consultation data remain visible in admin.
+
+### Admin Foundation Scope
+
+Implement protected admin login, overview, leads list/status update, consultations list, content overview, and admin read/update APIs for leads and consultations. Full CRUD forms for content are deferred.
+
+Reason: V1 needs admin foundation, but complete CRUD forms should be built after first QA and content ownership decisions.
+
+### Admin Rendering Mode
+
+Force the admin route segment and admin login page to dynamic rendering.
+
+Reason: Admin pages read live lead/content data and should not evaluate database queries during production build. This also avoids exhausting free-tier database session-pool limits during build-time static generation.
+
+### Lint Command
+
+Use `eslint . --max-warnings=0` for `npm run lint`.
+
+Reason: `next lint` is deprecated and will be removed in Next.js 16. The ESLint CLI catches the same Next/core-web-vitals rules through `eslint.config.mjs`.
+
+### Admin Content DELETE Archives
+
+`DELETE /api/v1/admin/inspirations/:id` and `DELETE /api/v1/admin/products/:id` set `status` to `ARCHIVED` instead of hard-deleting rows. Brands, collections, and showroom sections have no DELETE endpoint.
+
+Reason: The API doc left archive-vs-hard-delete open. Archiving preserves junction history and inbound references, and matches the content governance model.
+
+### Admin Content Status Controls
+
+The admin content page lists inspirations, brands, products, collections, and showroom sections (most recently updated 50 each) with inline status and featured controls via server actions. Full create/edit forms remain deferred and should call the documented admin content APIs.
+
+Reason: Gives admins immediate publish/draft/archive and featured control without committing to full form UX before content ownership decisions.
+
+### Floating WhatsApp On Mobile
+
+Keep the floating WhatsApp action on mobile, but increase mobile homepage hero bottom padding so it does not overlap the hero CTAs.
+
+Reason: Persistent mobile WhatsApp access is documented, but screenshot QA caught overlap with the secondary hero CTA.
+
+### Motion Architecture
+
+Lenis is driven by GSAP's ticker and synced to ScrollTrigger (`components/motion/smooth-scroll.tsx`) so smooth scroll and scroll-triggered animation share one clock. `Reveal` (fade/slide on scroll) and `Parallax` (gentle scrub on hero imagery) are the only scroll effects. Three.js renders one lazy-loaded ambient particle layer on the homepage hero (`HeroAmbient`), paused offscreen via IntersectionObserver and skipped under reduced motion, on screens below 768px, and on WebGL failure.
+
+Reason: User-approved stack must feel premium without scroll hijacking or mobile cost. All three layers degrade to fully visible static content.
+
+### Routes And IA
+
+* `/nolte` and `/mrida` are dedicated solution-brand pages; `/brands/[slug]` redirects those two slugs and serves product brands.
+* `/wardrobes` is framed entirely as Mrida Wardrobes, omitted from the main navigation, and links only to inspiration and consultation (Conflict 6).
+* Browsing spine: Space -> Collection -> Inspiration (Conflict 2). Collections live at `/collections/[slug]`.
+* Product filters are limited to the documented brand/type/category/subcategory query params (Conflict 5).
+
+### Media Field Shape
+
+Image fields are strings: absolute URLs and local paths are used as-is; any other value is treated as a Cloudinary public ID resolved by `lib/images.ts` with `f_auto,q_auto` transforms. Seed imagery is local placeholder SVGs in `public/images/placeholders/`.
+
+### No Analytics Table
+
+`POST /api/v1/events` and `/events/whatsapp-click` validate and log but do not persist; GA4 is the documented analytics provider and the database schema must stay within documented tables. Revisit if WhatsApp attribution needs durable storage.
+
+### Demo Seed Content
+
+Taxonomy (spaces, collections, brands, categories, showroom sections) is seeded verbatim from the vault. The 10 inspirations and 18 products are demo content derived from the documented taxonomy, marked in `prisma/seed.ts`, and must be replaced with real curated content before launch.
+
+### Database Connection Pooling
+
+The Supabase session pooler caps at 15 clients on the free tier; `DATABASE_URL` must include `connection_limit=4&pool_timeout=20` (dev/long-running) or use the transaction pooler with `pgbouncer=true&connection_limit=1` (serverless). Without this, parallel Prisma pools exhaust the pooler and pages serve empty fallbacks.
+
+### SEO Foundation
+
+`app/sitemap.ts` (static routes + published slugs), `app/robots.ts` (disallow `/admin`, `/api`), relative canonical (`alternates: { canonical: "./" }`) resolved per page against `metadataBase`, LocalBusiness JSON-LD in the site layout with placeholder contact details.
+
+## Source Trace
+
+Derived from `project-vault/15_Open_Questions.md`, `project-vault/16_Conflicts.md`, `project-vault/18_Build_Order.md`, source docs, and implementation work on 2026-06-10.

@@ -1,0 +1,210 @@
+{
+  "main": {
+    "id": "637560bc9f3c1d1a",
+    "type": "split",
+    "children": [
+      {
+        "id": "4e3a9b7f51257038",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "fc7b1793ed9e7a25",
+            "type": "leaf",
+            "state": {
+              "type": "graph",
+              "state": {},
+              "icon": "lucide-git-fork",
+              "title": "Graph view"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "0476d8c93e83b17e",
+    "type": "split",
+    "children": [
+      {
+        "id": "1540212b12b14f6b",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "deefb111f9872b80",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "a6618dc728ef7508",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "5ea901281d72cbe1",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "266634e3b363cddf",
+    "type": "split",
+    "children": [
+      {
+        "id": "0333e80a9613cd04",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "074dd8e0c2a9fb0d",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks"
+            }
+          },
+          {
+            "id": "bd2fcc49e0985300",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links"
+            }
+          },
+          {
+            "id": "c80f8ac5f5717aa2",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "831907f1e4249ae8",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "All properties"
+            }
+          },
+          {
+            "id": "1339bb06062558cf",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false
+    }
+  },
+  "active": "fc7b1793ed9e7a25",
+  "lastOpenFiles": [
+    "14_Implementation_Notes/Implementation Decisions.md.tmp.20968.249b2adfac14",
+    "00_Index.md",
+    "11_API_Backend/API - Admin Content.md.tmp.20968.c021cc9431b6",
+    "14_Implementation_Notes/Implementation Decisions.md.tmp.20968.64d90b3d42da",
+    "14_Implementation_Notes/Implementation Decisions.md",
+    "18_Build_Order.md",
+    "12_Technical_Architecture/Deployment.md",
+    "12_Technical_Architecture/Performance SEO Security.md",
+    "10_Database/Database - showroom_inspiration_mappings.md",
+    "10_Database/Database - showroom_brand_mappings.md",
+    "10_Database/Database - product_category_mappings.md",
+    "10_Database/Database - inspiration_brands.md",
+    "10_Database/Database - inspiration_products.md",
+    "10_Database/Database - collection_inspirations.md",
+    "14_Implementation_Notes/Build Readiness Notes.md",
+    "14_Implementation_Notes/Project Bootstrap.md",
+    "14_Implementation_Notes/Codex_Query_Guide.md",
+    "14_Implementation_Notes/Claude Code Query Guide.md",
+    "13_Rules_And_Constraints/Agent Instructions.md",
+    "13_Rules_And_Constraints/Quality Bar.md",
+    "13_Rules_And_Constraints/Forbidden Patterns.md",
+    "13_Rules_And_Constraints/Global Rules.md",
+    "11_API_Backend/Security Auth Rules.md",
+    "04_User_Flows/WhatsApp Inquiry.md",
+    "12_Technical_Architecture/User Approved Stack Extension - Three GSAP Lenis.md",
+    "12_Technical_Architecture/Folder Structure.md",
+    "12_Technical_Architecture/Authentication.md",
+    "12_Technical_Architecture/Asset Management.md"
+  ]
+}

@@ -1,0 +1,86 @@
+@import "tailwindcss";
+
+/*
+ * Sumanglam design tokens.
+ * Direction: restrained premium interior showroom — warm ivory ground,
+ * deep warm charcoal ink, muted bronze accent. 50% luxury showroom,
+ * 35% Apple minimalism, 15% editorial. Documented in
+ * project-vault/14_Implementation_Notes/Implementation Decisions.md
+ */
+
+@theme {
+  --color-background: #faf8f5;
+  --color-surface: #ffffff;
+  --color-clay: #f1ece4;
+  --color-sand: #e5dfd4;
+  --color-ink: #221d17;
+  --color-ink-soft: #6b6055;
+  --color-ink-faint: #9c9082;
+  --color-line: #e6e0d6;
+  --color-accent: #9a7945;
+  --color-accent-deep: #7c5f33;
+  --color-accent-soft: #c9b391;
+  --color-success: #5d7052;
+  --color-error: #99503e;
+  --color-warning: #a8823f;
+
+  --font-display: var(--font-fraunces), Georgia, serif;
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+
+  --tracking-luxe: 0.18em;
+
+  --animate-fade-up: fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background-color: var(--color-accent-soft);
+  color: var(--color-ink);
+}
+
+/* Visible focus for keyboard users */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* Reveal primitives — animated by GSAP ScrollTrigger when motion is allowed.
+   Without JS or with reduced motion, content stays fully visible. */
+.gsap-reveal {
+  opacity: 1;
+}
